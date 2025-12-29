@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  fastapi-app:
+    build: .
+    container_name: fastapi_rest_api
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-for-docker}
+      - DATABASE_URL=sqlite:////app/data/sql_app.db
+    volumes:
+      - ./data:/app/data
+      - ./app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+
+  # PostgreSQL опционально, закомментировано
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: fastapi_postgres
+  #   environment:
+  #     - POSTGRES_USER=${DB_USER:-fastapi}
+  #     - POSTGRES_PASSWORD=${DB_PASSWORD:-fastapi123}
+  #     - POSTGRES_DB=${DB_NAME:-fastapi_db}
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+  # pgadmin опционально, закомментировано
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   container_name: fastapi_pgadmin
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@admin.com}
+  #     - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin}
+  #   ports:
+  #     - "5050:80"
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #   restart: unless-stopped
+
+# volumes:
+#   postgres_data:
+#   pgadmin_data:
