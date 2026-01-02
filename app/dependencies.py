@@ -33,25 +33,24 @@ def check_permissions(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # If no authentication required for the endpoint
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Authentication required",
         )
     
-    # Admin has all permissions
+
     if current_user.group.value == "admin":
         return current_user
     
-    # Check if user is trying to access their own data
+
     if user_id and user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",
         )
     
-    # Check if user is trying to access their own advertisement
+
     if advertisement_id:
         advertisement = crud.get_advertisement(db, advertisement_id)
         if advertisement and advertisement.owner_id != current_user.id:
@@ -60,7 +59,7 @@ def check_permissions(
                 detail="Not enough permissions",
             )
     
-    # Check required group
+
     if required_group and current_user.group.value != required_group:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

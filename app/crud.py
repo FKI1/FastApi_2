@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from . import models, schemas, auth
 
-# User CRUD operations
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id, models.User.is_active == True).first()
 
@@ -16,10 +15,14 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).filter(models.User.is_active == True).offset(skip).limit(limit).all()
 
 def create_user(db: Session, user: schemas.UserCreate):
-    # Check if user already exists
-    if get_user_by_username(db, user.username):
+
+    db_user_by_username = get_user_by_username(db, user.username)
+    if db_user_by_username:
         raise ValueError("Username already registered")
-    if get_user_by_email(db, user.email):
+    
+
+    db_user_by_email = get_user_by_email(db, user.email)
+    if db_user_by_email:
         raise ValueError("Email already registered")
     
     hashed_password = auth.get_password_hash(user.password)
@@ -56,12 +59,11 @@ def delete_user(db: Session, user_id: int):
     if not db_user:
         return None
     
-    # Soft delete
+
     db_user.is_active = False
     db.commit()
     return db_user
 
-# Advertisement CRUD operations
 def get_advertisement(db: Session, advertisement_id: int):
     return db.query(models.Advertisement).filter(models.Advertisement.id == advertisement_id).first()
 

@@ -5,10 +5,15 @@ from .routers import users, advertisements, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables on startup
+    # Проверка необходимых переменных окружения
+    import os
+    if not os.getenv("SECRET_KEY"):
+        raise ValueError("SECRET_KEY environment variable is not set. Please set it before starting the application.")
+    
+    # Создание таблиц на старте
     Base.metadata.create_all(bind=engine)
     yield
-    # Cleanup on shutdown
+    # Очистка на завершении
     pass
 
 app = FastAPI(
@@ -18,7 +23,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Include routers
+# Подключение роутеров
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(advertisements.router)

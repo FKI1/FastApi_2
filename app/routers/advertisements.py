@@ -12,7 +12,6 @@ def read_advertisement(
     advertisement_id: int,
     db: Session = Depends(get_db)
 ):
-    # Everyone can read advertisement (including non-authorized users)
     db_advertisement = crud.get_advertisement(db, advertisement_id=advertisement_id)
     if db_advertisement is None:
         raise HTTPException(status_code=404, detail="Advertisement not found")
@@ -25,7 +24,6 @@ def read_advertisements(
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
-    # Everyone can search advertisements (including non-authorized users)
     advertisements = crud.get_advertisements(db, skip=skip, limit=limit, search=search)
     return advertisements
 

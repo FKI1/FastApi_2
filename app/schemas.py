@@ -7,7 +7,7 @@ class UserGroup(str, Enum):
     USER = "user"
     ADMIN = "admin"
 
-# Token schemas
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -21,7 +21,7 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
-# User schemas
+
 class UserBase(BaseModel):
     username: str
     email: EmailStr
@@ -44,7 +44,7 @@ class UserResponse(UserBase):
     
     model_config = ConfigDict(from_attributes=True)
 
-# Advertisement schemas
+
 class AdvertisementBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = None

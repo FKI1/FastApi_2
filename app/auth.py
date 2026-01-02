@@ -5,14 +5,13 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from . import schemas
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# Secret keys and algorithm
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
+SECRET_KEY = os.getenv("SECRET_KEY") 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 48
+
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is not set")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -56,4 +55,3 @@ def verify_token(token: str) -> Optional[schemas.TokenData]:
         )
     except JWTError:
         raise credentials_exception
-
