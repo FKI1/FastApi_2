@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import status 
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -63,7 +64,10 @@ def update_advertisement(
         raise HTTPException(status_code=404, detail="Advertisement not found")
     return db_advertisement
 
-@router.delete("/{advertisement_id}", response_model=schemas.AdvertisementResponse)
+@router.delete(
+    "/{advertisement_id}",
+    status_code=status.HTTP_204_NO_CONTENT 
+)
 def delete_advertisement(
     advertisement_id: int,
     current_user = Depends(
@@ -74,4 +78,4 @@ def delete_advertisement(
     db_advertisement = crud.delete_advertisement(db=db, advertisement_id=advertisement_id)
     if db_advertisement is None:
         raise HTTPException(status_code=404, detail="Advertisement not found")
-    return db_advertisement
+    return None 
