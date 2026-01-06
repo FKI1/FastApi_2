@@ -2,13 +2,18 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from .database import engine, Base
 from .routers import users, advertisements, auth
+import warnings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Проверка необходимых переменных окружения
-    import os
-    if not os.getenv("SECRET_KEY"):
-        raise ValueError("SECRET_KEY environment variable is not set. Please set it before starting the application.")
+    # Предупреждение если используется дефолтный SECRET_KEY
+    from .config import settings
+    if settings.SECRET_KEY == "development-secret-key-do-not-use-in-production":
+        warnings.warn(
+            "⚠️  ВНИМАНИЕ: Используется дефолтный SECRET_KEY. "
+            "Для продакшена установите SECRET_KEY в .env файле.",
+            UserWarning
+        )
     
     # Создание таблиц на старте
     Base.metadata.create_all(bind=engine)
@@ -19,7 +24,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Advertisement API",
     description="REST API for advertisements with user authentication",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan
 )
 

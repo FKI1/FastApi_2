@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from . import models, schemas, auth
+from .models import UserGroup  # ✅ Импортируем Enum
 
+# User CRUD operations
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id, models.User.is_active == True).first()
 
@@ -15,12 +17,12 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).filter(models.User.is_active == True).offset(skip).limit(limit).all()
 
 def create_user(db: Session, user: schemas.UserCreate):
-
+    # Проверка существования пользователя с таким username
     db_user_by_username = get_user_by_username(db, user.username)
     if db_user_by_username:
         raise ValueError("Username already registered")
     
-
+    # Проверка существования пользователя с таким email
     db_user_by_email = get_user_by_email(db, user.email)
     if db_user_by_email:
         raise ValueError("Email already registered")
@@ -59,11 +61,12 @@ def delete_user(db: Session, user_id: int):
     if not db_user:
         return None
     
-
+    # Soft delete
     db_user.is_active = False
     db.commit()
     return db_user
 
+# Advertisement CRUD operations
 def get_advertisement(db: Session, advertisement_id: int):
     return db.query(models.Advertisement).filter(models.Advertisement.id == advertisement_id).first()
 
@@ -103,11 +106,11 @@ def update_advertisement(db: Session, advertisement_id: int, advertisement_updat
     db.refresh(db_advertisement)
     return db_advertisement
 
-def delete_advertisement(db: Session, advertisement_id: int):
+def delete_advertisement(db: Session, advertisement_id: int) -> bool:  # ✅ Явная аннотация
     db_advertisement = get_advertisement(db, advertisement_id)
     if not db_advertisement:
-        return None
+        return False
     
     db.delete(db_advertisement)
     db.commit()
-    return db_advertisement
+    return True  # ✅ Возвращаем булево значение

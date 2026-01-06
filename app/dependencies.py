@@ -1,9 +1,9 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
-from . import auth
-from . import crud
+from . import auth, crud
 from .database import get_db
+from .models import UserGroup  # ✅ Импортируем Enum
 from sqlalchemy.orm import Session
 
 security = HTTPBearer()
@@ -29,28 +29,29 @@ def get_current_user(
 def check_permissions(
     user_id: Optional[int] = None,
     advertisement_id: Optional[int] = None,
-    required_group: str = None,
+    required_group: UserGroup = None,  # ✅ Используем Enum тип
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    # Если не требуется аутентификация для эндпоинта
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Authentication required",
         )
     
-
-    if current_user.group.value == "admin":
+    # ✅ Сравниваем с Enum, а не со строкой
+    if current_user.group == UserGroup.ADMIN:
         return current_user
     
-
+    # Проверяем, пытается ли пользователь получить доступ к своим данным
     if user_id and user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",
         )
     
-
+    # Проверяем, пытается ли пользователь получить доступ к своему объявлению
     if advertisement_id:
         advertisement = crud.get_advertisement(db, advertisement_id)
         if advertisement and advertisement.owner_id != current_user.id:
@@ -59,8 +60,8 @@ def check_permissions(
                 detail="Not enough permissions",
             )
     
-
-    if required_group and current_user.group.value != required_group:
+    # Проверяем required group
+    if required_group and current_user.group != required_group:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions",

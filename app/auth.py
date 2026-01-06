@@ -4,14 +4,12 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from . import schemas
-import os
+from .config import settings  # ✅ Используем pydantic-settings
 
-SECRET_KEY = os.getenv("SECRET_KEY") 
+# Secret keys and algorithm
+SECRET_KEY = settings.SECRET_KEY  # ✅ Из конфигурации
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 48
-
-if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable is not set")
+ACCESS_TOKEN_EXPIRE_HOURS = settings.ACCESS_TOKEN_EXPIRE_HOURS
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
